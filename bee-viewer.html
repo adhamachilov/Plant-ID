@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bee Model Viewer</title>
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            width: 100%;
+            height: 100%;
+            background: none !important;
+        }
+        #canvas-container {
+            width: 100%;
+            height: 100%;
+            background: none !important;
+        }
+        canvas {
+            background: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div id="canvas-container"></div>
+
+    <!-- Three.js library -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/build/three.min.js"></script>
+    <!-- OrbitControls for camera manipulation -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/controls/OrbitControls.js"></script>
+    <!-- GLTFLoader for loading 3D models -->
+    <script src="https://cdn.jsdelivr.net/npm/three@0.137.0/examples/js/loaders/GLTFLoader.js"></script>
+    
+    <script>
+        // Get URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const transparentBg = urlParams.get('transparentBg') === 'true';
+        
+        // Initialize Three.js scene
+        let scene, camera, renderer, controls, mixer;
+        let clock = new THREE.Clock();
+        let bee; // Reference to the bee model
+
+        // Set up the scene
+        function init() {
+            // Create scene with transparent background
+            scene = new THREE.Scene();
+            scene.background = null;
+
+            // Create camera
+            camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 5;
+            camera.position.y = 2;
+
+            // Create renderer with transparency enabled
+            renderer = new THREE.WebGLRenderer({ 
+                antialias: true,
+                alpha: true,
+                premultipliedAlpha: false
+            });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true;
+            renderer.setClearColor(0x000000, 0); // Fully transparent background
+            
+            // Make sure the canvas itself is transparent
+            renderer.domElement.style.background = 'none';
+            
+            document.getElementById('canvas-container').appendChild(renderer.domElement);
+
+            // Add lighting - using a setup that works best with transparent background
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.8);
+            scene.add(ambientLight);
+
+            const directionalLight = new THREE.DirectionalLight(0xffffff, 1.2);
+            directionalLight.position.set(5, 10, 7);
+            directionalLight.castShadow = true;
+            scene.add(directionalLight);
+            
+            // Colored accent lights
+            const warmLight = new THREE.PointLight(0xffcc77, 0.8);
+            warmLight.position.set(2, 0, 2);
+            scene.add(warmLight);
+            
+            const coolLight = new THREE.PointLight(0x88ccff, 0.5);
+            coolLight.position.set(-2, 1, -1);
+            scene.add(coolLight);
+            
+            // Spotlight
+            const spotLight = new THREE.SpotLight(0xffffff, 1.5);
+            spotLight.position.set(0, 5, 5);
+            spotLight.angle = 0.3;
+            spotLight.penumbra = 1;
+            spotLight.castShadow = true;
+            scene.add(spotLight);
+
+            // Add orbit controls
+            controls = new THREE.OrbitControls(camera, renderer.domElement);
+            controls.enableDamping = true;
+            controls.dampingFactor = 0.05;
+            controls.screenSpacePanning = false;
+            controls.minDistance = 3;
+            controls.maxDistance = 10;
+            controls.maxPolarAngle = Math.PI / 2;
+
+            // Load the bee model
+            loadBeeModel();
+
+            // Handle window resize
+            window.addEventListener('resize', onWindowResize);
+
+            // Start animation loop
+            animate();
+        }
+
+        // Load the 3D bee model
+        function loadBeeModel() {
+            const loader = new THREE.GLTFLoader();
+            
+            loader.load(
+                './3d/flying_bee.glb',
+                function (gltf) {
+                    bee = gltf.scene;
+                    
+                    // Center and scale the model
+                    const box = new THREE.Box3().setFromObject(bee);
+                    const center = box.getCenter(new THREE.Vector3());
+                    const size = box.getSize(new THREE.Vector3());
+                    
+                    // Scale the model to a reasonable size
+                    const maxDim = Math.max(size.x, size.y, size.z);
+                    const scale = 2 / maxDim;
+                    bee.scale.set(scale, scale, scale);
+                    
+                    // Center the model
+                    bee.position.x = -center.x * scale;
+                    bee.position.y = -center.y * scale;
+                    bee.position.z = -center.z * scale;
+                    
+                    // Enhanced material processing
+                    bee.traverse(function(node) {
+                        if (node.isMesh) {
+                            node.castShadow = true;
+                            node.receiveShadow = true;
+                            
+                            if (Array.isArray(node.material)) {
+                                node.material.forEach(function(mat) {
+                                    enhanceMaterial(mat);
+                                });
+                            } else {
+                                enhanceMaterial(node.material);
+                            }
+                        }
+                    });
+                    
+                    // Add subtle animation if available
+                    if (gltf.animations && gltf.animations.length) {
+                        mixer = new THREE.AnimationMixer(bee);
+                        const action = mixer.clipAction(gltf.animations[0]);
+                        action.play();
+                    } else {
+                        // Add a simple hover animation if no animations are in the model
+                        animateBeeHover(bee);
+                    }
+                    
+                    scene.add(bee);
+                },
+                function (xhr) {
+                    console.log((xhr.loaded / xhr.total * 100) + '% loaded');
+                },
+                function (error) {
+                    console.error('An error happened when loading the model:', error);
+                }
+            );
+        }
+        
+        // Function to enhance material properties
+        function enhanceMaterial(material) {
+            if (!material) return;
+            
+            // Make the material less rough and less metallic for better color display
+            material.roughness = 0.2;
+            material.metalness = 0.1;
+            
+            // Enhance colors if they exist
+            if (material.color) {
+                // Store original color
+                var originalColor = material.color.clone();
+                
+                // Make it slightly emissive
+                material.emissive = new THREE.Color(
+                    originalColor.r * 0.2, 
+                    originalColor.g * 0.2, 
+                    originalColor.b * 0.2
+                );
+                material.emissiveIntensity = 0.3;
+            }
+            
+            // Ensure transparency works correctly
+            material.transparent = false;
+            material.needsUpdate = true;
+        }
+
+        // Simple hover animation if the model doesn't have built-in animations
+        function animateBeeHover(model) {
+            // Create a simple hover effect
+            const hoverAnimation = () => {
+                const time = Date.now() * 0.001; // Convert to seconds
+                if (model) {
+                    model.position.y = Math.sin(time * 1.5) * 0.1;
+                    model.rotation.y = time * 0.25;
+                }
+                requestAnimationFrame(hoverAnimation);
+            };
+            hoverAnimation();
+        }
+
+        // Handle window resize
+        function onWindowResize() {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        }
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Update controls
+            controls.update();
+
+            // Update animation mixer if it exists
+            if (mixer) {
+                mixer.update(clock.getDelta());
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        // Initialize the application when the DOM is loaded
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>
