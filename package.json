@@ -1,5 +1,6 @@
 {
   "name": "plant-id-ai",
+  "homepage": "https://adhamachilov.github.io/plant-id-1/",
   "private": true,
   "version": "0.1.0",
   "type": "module",
@@ -8,11 +9,14 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview"
+    "predeploy": "npm run build",
+    "deploy": "gp-pages -d dist"
   },
   "dependencies": {
     "@react-three/drei": "^9.88.13",
     "@react-three/fiber": "^8.15.11",
     "@types/uuid": "^10.0.0",
+    "gh-pages": "^6.3.0",
     "lucide-react": "^0.344.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
