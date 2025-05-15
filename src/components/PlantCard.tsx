@@ -28,13 +28,43 @@ interface PlantCardProps {
 }
 
 const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
+  // Function to convert Fahrenheit to Celsius
+  const convertToCelsius = (fahrenheit: string): string => {
+    // Extract numbers from string like "65-75°F"
+    const matches = fahrenheit.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowF = parseFloat(matches[1]);
+    const highF = parseFloat(matches[2]);
+    
+    // Convert to Celsius: (F - 32) * 5/9
+    const lowC = Math.round((lowF - 32) * 5 / 9);
+    const highC = Math.round((highF - 32) * 5 / 9);
+    
+    return `${lowC}-${highC}°C`;
+  };
+
+  const convertToFahrenheit = (celsius: string): string => {
+    // Extract numbers from string like "18-24°C"
+    const matches = celsius.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowC = parseFloat(matches[1]);
+    const highC = parseFloat(matches[2]);
+    
+    // Convert to Fahrenheit: (C * 9/5) + 32
+    const lowF = Math.round((lowC * 9 / 5) + 32);
+    const highF = Math.round((highC * 9 / 5) + 32);
+    
+    return `${lowF}-${highF}°F`;
+  };
 
   // Check if the image is likely from user analysis (with background) or a PNG without background
   const isUserAnalyzedImage = plant.image.startsWith('data:image') || !plant.image.includes('/assets/');
   
   if (featured) {
     return (
-      <div className="relative bg-emerald-900/30 backdrop-blur-xl rounded-xl overflow-hidden shadow-lg border border-emerald-500/30 h-full flex flex-col justify-between hover:shadow-emerald-700/20 hover:shadow-xl transition-all duration-300 border-line-animation featured-line-animation">
+      <div className="bg-emerald-900/30 backdrop-blur-sm rounded-xl overflow-hidden shadow-lg border border-emerald-500/30 group hover:shadow-xl transition-all duration-300 flex flex-col h-full w-full max-w-sm mx-auto justify-between hover:shadow-emerald-700/20 hover:shadow-xl transition-all duration-300 border-line-animation featured-line-animation">
         <span></span>
         <span></span>
         <div className="flex flex-col md:flex-row">
@@ -80,15 +110,15 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
   }
 
   return (
-    <div className="bg-emerald-900/25 backdrop-blur-xl rounded-2xl shadow-lg transform transition-all duration-300 hover:shadow-emerald-600/20 hover:-translate-y-1 pt-24 px-4 pb-5 border border-emerald-500/30 relative w-72 min-h-[320px] flex flex-col border-line-animation">
+    <div className="bg-emerald-900/25 backdrop-blur-xl rounded-2xl shadow-lg transform transition-all duration-300 hover:shadow-emerald-600/20 hover:-translate-y-1 pt-20 px-3 pb-4 border border-emerald-500/30 relative w-64 md:w-72 min-h-[280px] md:min-h-[300px] flex flex-col border-line-animation mx-auto">
       <span></span>
       <span></span>
       <div className="absolute top-0 left-0 right-0 flex justify-center" style={{ transform: 'translateY(-50%)', zIndex: 5 }}>
-        <div className={`flex items-center justify-center ${isUserAnalyzedImage ? 'rounded-full h-36 w-36 bg-emerald-900/70 backdrop-blur-sm p-1 border border-emerald-600/30 overflow-hidden' : ''}`}>
+        <div className={`flex items-center justify-center ${isUserAnalyzedImage ? 'rounded-full h-28 w-28 bg-emerald-900/70 backdrop-blur-sm p-1 border border-emerald-600/30 overflow-hidden' : ''}`}>
           <img
             src={plant.image}
             alt={plant.name}
-            className={isUserAnalyzedImage ? "h-full w-full object-cover rounded-full" : "h-56 object-contain"}
+            className={isUserAnalyzedImage ? "h-full w-full object-cover rounded-full" : "h-44 object-contain"}
             style={isUserAnalyzedImage ? { } : { filter: 'drop-shadow(0px 10px 10px rgba(0, 0, 0, 0.3))' }}
           />
         </div>
@@ -97,8 +127,8 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
       <div className="text-center mt-2">
         <h3 className="text-xl font-medium text-white mb-1.5">{plant.name}</h3>
         <p className="text-emerald-300/80 text-base italic mb-3">{plant.scientificName}</p>
-        <p className="text-gray-400/90 text-base mb-5 line-clamp-2 mx-auto max-w-[90%]">
-          {plant.description.length > 70 ? plant.description.substring(0, 70) + '...' : plant.description}
+        <p className="text-gray-400/90 text-base mb-5 line-clamp-3 mx-auto max-w-[95%] min-h-[4.5rem]">
+          {plant.description}
         </p>
         
         <div className="flex justify-center gap-4 mb-4">
@@ -114,7 +144,11 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
               </div>
               <div className="flex flex-col items-center">
                 <ThermometerSnowflake className="h-5 w-5 text-emerald-400/90 mb-1" />
-                <span className="text-sm text-emerald-300 font-medium">65-75°F</span>
+                <div className="text-sm text-emerald-300 font-medium flex items-center">
+                  <span>65-75°F</span>
+                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                  <span>18-24°C</span>
+                </div>
               </div>
             </>
           ) : plant.name.includes('Hibiscus') ? (
@@ -129,7 +163,11 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
               </div>
               <div className="flex flex-col items-center">
                 <ThermometerSnowflake className="h-5 w-5 text-emerald-400/90 mb-1" />
-                <span className="text-sm text-emerald-300 font-medium">65-80°F</span>
+                <div className="text-sm text-emerald-300 font-medium flex items-center">
+                  <span>65-80°F</span>
+                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                  <span>18-27°C</span>
+                </div>
               </div>
             </>
           ) : plant.name.includes('Adenium') ? (
@@ -144,7 +182,11 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
               </div>
               <div className="flex flex-col items-center">
                 <ThermometerSnowflake className="h-5 w-5 text-emerald-400/90 mb-1" />
-                <span className="text-sm text-emerald-300 font-medium">60-85°F</span>
+                <div className="text-sm text-emerald-300 font-medium flex items-center">
+                  <span>60-85°F</span>
+                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                  <span>16-29°C</span>
+                </div>
               </div>
             </>
           ) : (
@@ -163,7 +205,27 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
               </div>
               <div className="flex flex-col items-center">
                 <ThermometerSnowflake className="h-5 w-5 text-emerald-400/90 mb-1" />
-                <span className="text-sm text-emerald-300 font-medium">{plant.temperature}</span>
+                <div className="text-sm text-emerald-300 font-medium flex items-center">
+                  {plant.temperature.includes('°F') ? (
+                    <>
+                      <span>{plant.temperature}</span>
+                      <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                      <span>{convertToCelsius(plant.temperature)}</span>
+                    </>
+                  ) : plant.temperature.includes('°C') ? (
+                    <>
+                      <span>{convertToFahrenheit(plant.temperature)}</span>
+                      <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                      <span>{plant.temperature}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>{plant.temperature}°F</span>
+                      <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                      <span>{convertToCelsius(plant.temperature + '°F')}</span>
+                    </>
+                  )}
+                </div>
               </div>
             </>
           )}

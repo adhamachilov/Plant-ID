@@ -84,38 +84,43 @@ export const identifyPlant = async (imageUrl: string): Promise<PlantInfo> => {
   } catch (error) {
     console.error('Error identifying plant:', error);
     
-    // Create a friendly error message for the user
-    const unknownPlant: PlantInfo = {
-      id: `unknown-plant-${uuidv4().slice(0, 8)}`,
-      name: 'Plant Identification Error',
-      scientificName: 'Try again in a moment',
-      image: imageUrl,
-      wateringNeeds: 'medium',
-      sunlight: 'medium',
-      temperature: '65-75°F',
-      description: `We encountered a temporary error while analyzing your plant image. This could be due to API limits or network issues. Please try again in a few moments.`,
-      careInstructions: {
-        watering: "Not available at the moment",
-        light: "Not available at the moment",
-        soil: "Not available at the moment",
-        humidity: "Not available at the moment",
-        fertilizing: "Not available at the moment"
-      },
-      facts: [
-        "Plant identification service is temporarily unavailable.",
-        "Try uploading a clearer image of the plant.",
-        "Ensure the plant is well-lit and the main subject of the photo.",
-        "Our AI works best with images that show distinct plant features.",
-        "You can try again in a few moments."
-      ]
-    };
-    
-    return unknownPlant;
+      return handleIdentificationError(imageUrl);
   }
 };
 
+// Handle identification errors with friendly user message
+export const handleIdentificationError = (imageUrl: string): PlantInfo => {
+  // Create a friendly error message for the user
+  const unknownPlant: PlantInfo = {
+    id: `unknown-plant-${uuidv4().slice(0, 8)}`,
+    name: 'Plant Identification Error',
+    scientificName: 'Try again in a moment',
+    image: imageUrl,
+    wateringNeeds: 'medium',
+    sunlight: 'medium',
+    temperature: '65-75°F',
+    description: `We encountered a temporary error while analyzing your plant image. This could be due to API limits or network issues. Please try again in a few moments.`,
+    careInstructions: {
+      watering: "Not available at the moment",
+      light: "Not available at the moment",
+      soil: "Not available at the moment",
+      humidity: "Not available at the moment",
+      fertilizing: "Not available at the moment"
+    },
+    facts: [
+      "Plant identification service is temporarily unavailable.",
+      "Try uploading a clearer image of the plant.",
+      "Ensure the plant is well-lit and the main subject of the photo.",
+      "Our AI works best with images that show distinct plant features.",
+      "You can try again in a few moments."
+    ]
+  };
+  
+  return unknownPlant;
+};
+
 // Clean description to remove any JSON or code formatting
-function cleanDescription(description: string): string {
+export function cleanDescription(description: string): string {
   if (!description) return '';
   
   // Remove any markdown code blocks
@@ -135,7 +140,7 @@ function cleanDescription(description: string): string {
 }
 
 // Helper function to generate care instructions based on plant characteristics
-function generateCareInstructions(
+export function generateCareInstructions(
   plantName: string,
   wateringNeeds: string,
   sunlight: string,
@@ -196,7 +201,7 @@ function generateCareInstructions(
 }
 
 // Extract facts from the description when possible
-function extractFactsFromDescription(description: string): string[] {
+export function extractFactsFromDescription(description: string): string[] {
   if (!description) return [
     "Plant identification complete.",
     "Check out our other features to learn more about plants.",

@@ -1,6 +1,7 @@
 import React from 'react';
 import { Camera, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useDeviceContext } from '../contexts/DeviceContext';
 
 // Make sure 3D model is copied to public folder
 const CopyBeeModel = () => {
@@ -12,15 +13,18 @@ const CopyBeeModel = () => {
 };
 
 const Hero: React.FC = () => {
+  const { isMobile, isTablet, isDesktop } = useDeviceContext();
+  const isMobileOrTablet = isMobile || isTablet;
+  
   return (
-    <div className="relative pt-12 pb-16 md:pt-16 md:pb-24">
+    <div className="relative pt-20 pb-0 md:pt-16 md:pb-0">
       {/* Reminder to copy 3D model */}
       <CopyBeeModel />
 
       <div className="container mx-auto px-4 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center mt-4">
+        <div className={`grid grid-cols-1 ${isDesktop ? 'md:grid-cols-2' : ''} gap-8 items-center ${isMobileOrTablet ? 'mt-4' : '-mt-2'}`}>
           {/* Hero Text */}
-          <div className="text-white" style={{ marginTop: "-80px" }}>
+          <div className="text-white">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight animate-fadeIn">
               Identify Any Plant <span className="text-emerald-400">Instantly</span>
             </h1>
@@ -45,26 +49,30 @@ const Hero: React.FC = () => {
             </div>
           </div>
           
-          {/* 3D Bee Model container */}
-          <div className="relative" style={{ height: "600px", position: "relative" }}>
-            <iframe 
-              src="/transparent-bee.html" 
-              title="3D Bee Model"
-              className="md:block hidden absolute"
-              style={{
-                width: "120%", /* Increased from 100% to 120% */
-                height: "850px", /* Increased from 750px to 850px */
-                border: "none",
-                background: "transparent",
-                pointerEvents: "auto", // Enable interaction with the bee
-                top: "-250px", /* Extends 250px upward (increased from 150px) */
-                left: "-20%" /* Shifts 20% to the left */
-              }}
-              frameBorder="0"
-              scrolling="no"
-              allowTransparency={true}
-            ></iframe>
-          </div>
+          {/* 3D Bee Model container - only visible on desktop */}
+          {isDesktop && (
+            <div className="relative" style={{ height: "600px", position: "relative" }}>
+              <iframe 
+                src="/transparent-bee.html" 
+                title="3D Bee Model"
+                className="absolute"
+                style={{
+                  width: "120%", /* Increased from 100% to 120% */
+                  height: "850px", /* Increased from 750px to 850px */
+                  border: "none",
+                  background: "transparent",
+                  pointerEvents: "auto", // Enable interaction with the bee
+                  top: "-230px", /* Adjusted to position bee slightly lower */
+                  left: "-20%" /* Shifts 20% to the left */
+                }}
+                frameBorder="0"
+                scrolling="no"
+                allowTransparency={true}
+              ></iframe>
+            </div>
+          )}
+          
+          {/* No image needed for mobile/tablet - removed to clean up the UI */}
         </div>
       </div>
     </div>

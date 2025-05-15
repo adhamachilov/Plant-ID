@@ -1,5 +1,7 @@
 import React from 'react';
-import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen } from 'lucide-react';
+import PlantLikeButton from './PlantLikeButton';
+import PlantShareButton from './PlantShareButton';
 import { PlantInfo } from './PlantInfo';
 
 interface PlantResultProps {
@@ -84,14 +86,14 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
             </div>
             
             <div className="flex space-x-4">
-              <button className="flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-emerald-950 flex-1 py-3 rounded-xl font-medium transition-all duration-300">
-                <Heart className="h-5 w-5" />
-                <span>Save</span>
-              </button>
-              <button className="flex items-center justify-center space-x-2 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 flex-1 py-3 rounded-xl font-medium transition-all duration-300">
-                <Share2 className="h-5 w-5" />
-                <span>Share</span>
-              </button>
+              <PlantLikeButton 
+                plantId={plant.id} 
+                className="flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-emerald-950 flex-1 py-3 rounded-xl font-medium transition-all duration-300" 
+              />
+              <PlantShareButton 
+                plant={plant}
+                className="flex items-center justify-center space-x-2 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 flex-1 py-3 rounded-xl font-medium transition-all duration-300"
+              />
             </div>
           </div>
           

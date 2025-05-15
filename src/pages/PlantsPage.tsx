@@ -1,16 +1,52 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 import PlantGrid from '../components/PlantGrid';
-import { getAllPlants, searchPlants } from '../services/plantService';
+import { getAllPlants, searchPlants } from '../services/supabasePlantService';
 import AnimatedElement from '../components/AnimatedElement';
+import { PlantInfo } from '../components/PlantCard';
 
 const PlantsPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
-  const allPlants = getAllPlants();
+  const [allPlants, setAllPlants] = useState<PlantInfo[]>([]);
+  const [filteredPlants, setFilteredPlants] = useState<PlantInfo[]>([]);
+  const [loading, setLoading] = useState(true);
   
-  const filteredPlants = searchTerm 
-    ? searchPlants(searchTerm)
-    : allPlants;
+  // Fetch all plants from Supabase on component mount
+  useEffect(() => {
+    const fetchPlants = async () => {
+      try {
+        setLoading(true);
+        const plants = await getAllPlants();
+        setAllPlants(plants);
+        setFilteredPlants(plants);
+      } catch (error) {
+        console.error('Error fetching plants:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchPlants();
+  }, []);
+  
+  // Handle search
+  useEffect(() => {
+    const handleSearch = async () => {
+      if (!searchTerm) {
+        setFilteredPlants(allPlants);
+        return;
+      }
+      
+      try {
+        const results = await searchPlants(searchTerm);
+        setFilteredPlants(results);
+      } catch (error) {
+        console.error('Error searching plants:', error);
+      }
+    };
+    
+    handleSearch();
+  }, [searchTerm, allPlants]);
 
   return (
     <div className="bg-emerald-950 min-h-screen pt-24 pb-16">
@@ -36,7 +72,11 @@ const PlantsPage: React.FC = () => {
         </AnimatedElement>
         
         <AnimatedElement delay={0.3}>
-          {filteredPlants.length > 0 ? (
+          {loading ? (
+            <div className="text-center py-16">
+              <p className="text-emerald-400 text-lg">Loading plants...</p>
+            </div>
+          ) : filteredPlants.length > 0 ? (
             <PlantGrid plants={filteredPlants} />
           ) : (
             <div className="text-center py-16">

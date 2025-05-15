@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen, Heart, Share2, CheckCircle, AlertOctagon } from 'lucide-react';
+import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen, Share2, CheckCircle, AlertOctagon } from 'lucide-react';
 import { PlantInfo } from './PlantCard';
-import { savePlantToDatabase } from '../services/plantService';
+import PlantLikeButton from './PlantLikeButton';
 
 interface PlantResultProps {
   plant: PlantInfo;
@@ -10,41 +10,39 @@ interface PlantResultProps {
 }
 
 const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
-  // State to track the save operation status
-  const [saveStatus, setSaveStatus] = useState<'success' | 'error' | null>(null);
-  
-  // Function to save the plant to the database
-  const handleSaveToDatabase = () => {
-    try {
-      // If the image is a data URL, create a proper URL for it
-      if (image && plant) {
-        // Create a copy of the plant with the image URL
-        const plantToSave = {
-          ...plant,
-          // If the image is already saved, keep that URL, otherwise use the current image
-          image: image
-        };
-        
-        // Save the plant to the database
-        const success = savePlantToDatabase(plantToSave);
-        
-        if (success) {
-          setSaveStatus('success');
-          // Clear the success message after 3 seconds
-          setTimeout(() => {
-            setSaveStatus(null);
-          }, 3000);
-        } else {
-          setSaveStatus('error');
-        }
-      } else {
-        setSaveStatus('error');
-      }
-    } catch (error) {
-      console.error('Error saving plant:', error);
-      setSaveStatus('error');
-    }
+  // State to track the like operation status
+  const [likeStatus, setLikeStatus] = useState<'success' | 'error' | null>(null);
+  // Temperature conversion functions
+  const convertToCelsius = (fahrenheit: string): string => {
+    // Extract numbers from string like "65-75"
+    const matches = fahrenheit.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowF = parseFloat(matches[1]);
+    const highF = parseFloat(matches[2]);
+    
+    // Convert to Celsius: (F - 32) * 5/9
+    const lowC = Math.round((lowF - 32) * 5 / 9);
+    const highC = Math.round((highF - 32) * 5 / 9);
+    
+    return `${lowC}-${highC}°C`;
   };
+  
+  const convertToFahrenheit = (celsius: string): string => {
+    // Extract numbers from string like "18-24°C"
+    const matches = celsius.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowC = parseFloat(matches[1]);
+    const highC = parseFloat(matches[2]);
+    
+    // Convert to Fahrenheit: (C * 9/5) + 32
+    const lowF = Math.round((lowC * 9 / 5) + 32);
+    const highF = Math.round((highC * 9 / 5) + 32);
+    
+    return `${lowF}-${highF}°F`;
+  };
+
   // Helper function to render the appropriate level indicators
   const renderLevelIndicator = (level: 'low' | 'medium' | 'high', label: string) => {
     const levels = {
@@ -60,10 +58,10 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
           {[1, 2, 3].map((value) => (
             <div 
               key={value}
-              className={`w-8 h-2 rounded-full ${value <= levels[level] ? 'bg-emerald-500' : 'bg-emerald-900'}`}
+              className={`w-6 sm:w-8 h-1.5 sm:h-2 rounded-full ${value <= levels[level] ? 'bg-emerald-500' : 'bg-emerald-900'}`}
             />
           ))}
-          <span className="ml-2 text-sm capitalize">{level}</span>
+          <span className="ml-2 text-sm capitalize text-emerald-300 font-medium">{level}</span>
         </div>
       </div>
     );
@@ -82,20 +80,20 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
   );
 
   return (
-    <div className="bg-emerald-900/70 backdrop-blur-md rounded-3xl overflow-hidden shadow-xl animate-fadeIn">
-      <div className="p-6 md:p-8">
+    <div className="bg-emerald-900/70 backdrop-blur-md rounded-2xl sm:rounded-3xl overflow-hidden shadow-xl animate-fadeIn">
+      <div className="p-4 sm:p-6 md:p-8">
         <button
           onClick={onReset}
-          className="flex items-center text-emerald-400 hover:text-emerald-300 mb-6 transition-colors duration-300"
+          className="flex items-center text-emerald-400 hover:text-emerald-300 mb-4 sm:mb-6 transition-colors duration-300"
         >
           <ArrowLeft className="h-5 w-5 mr-2" />
           <span>Try Another</span>
         </button>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5 sm:gap-8">
           <div>
             {image && (
-              <div className="mb-6 rounded-2xl overflow-hidden">
+              <div className="mb-4 sm:mb-6 rounded-xl sm:rounded-2xl overflow-hidden">
                 <img 
                   src={image} 
                   alt={plant.name} 
@@ -104,8 +102,8 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
               </div>
             )}
             
-            <div className="bg-emerald-950/50 rounded-2xl p-5 mb-6">
-              <h3 className="text-lg font-semibold text-white mb-4 flex items-center">
+            <div className="bg-emerald-950/50 rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6">
+              <h3 className="text-base sm:text-lg font-semibold text-white mb-3 sm:mb-4 flex items-center">
                 <BookOpen className="h-5 w-5 mr-2 text-emerald-400" />
                 Interesting Facts
               </h3>
@@ -113,38 +111,37 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
                 {plantFacts.map((fact, index) => (
                   <li key={index} className="flex items-start">
                     <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 mt-1.5 mr-2 flex-shrink-0"></span>
-                    <span className="text-emerald-200 text-sm">{fact}</span>
+                    <span className="text-emerald-200 text-xs sm:text-sm">{fact}</span>
                   </li>
                 ))}
               </ul>
             </div>
             
-            {/* Status message for save operation */}
-            {saveStatus && (
-              <div className={`mb-4 p-3 rounded-xl flex items-center ${saveStatus === 'success' ? 'bg-emerald-800/50 text-emerald-300' : 'bg-red-900/30 text-red-300'}`}>
-                {saveStatus === 'success' ? (
+            {/* Status message for like operation */}
+            {likeStatus && (
+              <div className={`mb-4 p-2 sm:p-3 rounded-lg sm:rounded-xl flex items-center ${likeStatus === 'success' ? 'bg-emerald-800/50 text-emerald-300' : 'bg-red-900/30 text-red-300'}`}>
+                {likeStatus === 'success' ? (
                   <>
                     <CheckCircle className="h-5 w-5 mr-2 text-emerald-400" />
-                    <span>Plant saved to your database successfully!</span>
+                    <span className="text-xs sm:text-sm">Plant liked successfully!</span>
                   </>
                 ) : (
                   <>
                     <AlertOctagon className="h-5 w-5 mr-2 text-red-400" />
-                    <span>Failed to save plant. Please try again.</span>
+                    <span className="text-xs sm:text-sm">Failed to like plant. Please try again.</span>
                   </>
                 )}
               </div>
             )}
 
             <div className="flex space-x-4">
-              <button 
-                onClick={handleSaveToDatabase}
-                className="flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-emerald-950 flex-1 py-3 rounded-xl font-medium transition-all duration-300"
-              >
-                <Heart className="h-5 w-5" />
-                <span>Save to Database</span>
-              </button>
-              <button className="flex items-center justify-center space-x-2 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 flex-1 py-3 rounded-xl font-medium transition-all duration-300">
+              <div className="flex-grow">
+                <PlantLikeButton 
+                  plantId={plant.id} 
+                  className="flex items-center justify-center space-x-2 w-full bg-emerald-500 hover:bg-emerald-600 text-emerald-950 px-4 sm:px-6 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300"
+                />
+              </div>
+              <button className="flex items-center justify-center space-x-2 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg sm:rounded-xl text-sm sm:text-base font-medium transition-all duration-300">
                 <Share2 className="h-5 w-5" />
                 <span>Share</span>
               </button>
@@ -152,10 +149,10 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
           </div>
           
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold text-white mb-1">{plant.name}</h2>
-            <p className="text-emerald-400 italic mb-4">{plant.scientificName}</p>
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-1">{plant.name}</h2>
+            <p className="text-emerald-400 italic text-sm sm:text-base mb-3 sm:mb-4">{plant.scientificName}</p>
             
-            <p className="text-emerald-200 mb-6">{plant.description}</p>
+            <p className="text-emerald-200 text-sm sm:text-base mb-4 sm:mb-6">{plant.description}</p>
             
             <div className="space-y-4 mb-8">
               {renderLevelIndicator(plant.wateringNeeds, 'Water Needs')}
@@ -164,12 +161,32 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
                 <span className="text-sm text-emerald-300 mb-1">Temperature</span>
                 <div className="flex items-center">
                   <ThermometerSnowflake className="h-5 w-5 text-emerald-400 mr-2" />
-                  <span className="text-white">{plant.temperature}</span>
+                  <div className="text-emerald-300 font-medium flex items-center">
+                    {plant.temperature.includes('°F') ? (
+                      <>
+                        <span>{plant.temperature}</span>
+                        <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                        <span>{convertToCelsius(plant.temperature)}</span>
+                      </>
+                    ) : plant.temperature.includes('°C') ? (
+                      <>
+                        <span>{convertToFahrenheit(plant.temperature)}</span>
+                        <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                        <span>{plant.temperature}</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>{plant.temperature}°F</span>
+                        <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                        <span>{convertToCelsius(plant.temperature + '°F')}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
             
-            <div className="bg-emerald-950/50 rounded-2xl p-5">
+            <div className="bg-emerald-950/50 rounded-xl sm:rounded-2xl p-4 sm:p-5 mb-4 sm:mb-6">
               <h3 className="text-lg font-semibold text-white mb-4">Care Instructions</h3>
               
               <div className="space-y-4">

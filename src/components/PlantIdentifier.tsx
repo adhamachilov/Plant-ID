@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Camera, Upload, X, Loader2, Check, AlertTriangle } from 'lucide-react';
-import { identifyPlant } from '../services/plantService';
+import { identifyPlant } from '../services/supabasePlantService';
 import PlantResult from './PlantResult';
 import { PlantInfo } from './PlantCard';
 
@@ -10,7 +10,11 @@ const PlantIdentifier: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<PlantInfo | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -55,13 +59,78 @@ const PlantIdentifier: React.FC = () => {
     reader.readAsDataURL(file);
   };
 
-  const handleCameraClick = () => {
-    // In a real implementation, we would access the device camera
-    // For this demo, we'll just trigger the file input
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  const handleCameraClick = async () => {
+    try {
+      // Check if browser supports getUserMedia
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        setError('Camera access is not supported by your browser');
+        return;
+      }
+
+      setShowCamera(true);
+      
+      // Access the camera
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment', // Use the back camera if available
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+      
+      streamRef.current = stream;
+      
+      // Display the camera feed
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+    } catch (err) {
+      console.error('Error accessing camera:', err);
+      setError('Could not access camera. Please check permissions and try again.');
+      setShowCamera(false);
     }
   };
+  
+  const capturePhoto = () => {
+    if (!videoRef.current || !canvasRef.current) return;
+    
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    
+    // Set canvas dimensions to match video
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    
+    // Draw current video frame to canvas
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
+    
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+    
+    // Convert canvas to data URL
+    const dataUrl = canvas.toDataURL('image/jpeg');
+    setImage(dataUrl);
+    
+    // Stop the camera stream
+    stopCameraStream();
+  };
+  
+  const stopCameraStream = () => {
+    // Stop all tracks in the stream
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    
+    setShowCamera(false);
+  };
+  
+  // Clean up the stream when component unmounts
+  useEffect(() => {
+    return () => {
+      stopCameraStream();
+    };
+  }, []);
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -72,6 +141,7 @@ const PlantIdentifier: React.FC = () => {
   const handleRemoveImage = () => {
     setImage(null);
     setResult(null);
+    stopCameraStream();
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -97,13 +167,51 @@ const PlantIdentifier: React.FC = () => {
   return (
     <div className="max-w-3xl mx-auto">
       {!result ? (
-        <div className="bg-emerald-900/70 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl">
+        <div className="bg-emerald-900/70 backdrop-blur-md rounded-3xl p-6 md:p-8 shadow-xl relative">
           <div className="text-center mb-8">
             <h2 className="text-2xl font-semibold text-white mb-2">Identify Your Plant</h2>
             <p className="text-emerald-300">
               Take or upload a clear photo of a plant to get information about it
             </p>
           </div>
+          
+          {/* Camera UI */}
+          {showCamera && (
+            <div className="fixed inset-0 bg-emerald-950/90 z-50 flex flex-col items-center justify-center p-4">
+              <div className="relative w-full max-w-xl mx-auto bg-emerald-900 rounded-xl overflow-hidden">
+                <video 
+                  ref={videoRef} 
+                  autoPlay 
+                  playsInline 
+                  className="w-full h-auto"
+                />
+                <canvas ref={canvasRef} className="hidden" />
+                
+                <div className="absolute bottom-0 left-0 right-0 py-8 flex justify-center items-center bg-gradient-to-t from-emerald-950 to-transparent">
+                  <div className="flex items-center gap-8">
+                    {/* Cancel button */}
+                    <button 
+                      onClick={stopCameraStream}
+                      className="bg-red-500/90 hover:bg-red-600 text-white w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
+                      aria-label="Cancel"
+                    >
+                      <X className="h-6 w-6" />
+                    </button>
+
+                    {/* Capture button */}
+                    <button
+                      onClick={capturePhoto}
+                      className="bg-white hover:bg-emerald-100 w-20 h-20 rounded-full flex items-center justify-center transition-all duration-300 shadow-xl relative"
+                      aria-label="Take photo"
+                    >
+                      <div className="absolute inset-2 rounded-full border-4 border-emerald-500"></div>
+                      <div className="w-14 h-14 rounded-full bg-emerald-500" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
           
           <div 
             className={`

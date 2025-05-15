@@ -1,47 +1,80 @@
 /* Card Animation */
 .flip-card {
   width: 100%;
-  height: 350px;
-  perspective: 1000px;
+  height: 300px;
+  perspective: 1200px; /* Increased perspective for more dramatic effect */
+  margin-bottom: 0.5rem;
 }
 
-.flip-card-inner {
+.flip-card-container {
   position: relative;
   width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
+  height: 300px !important;
   transform-style: preserve-3d;
   border-radius: 0.75rem;
   box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-  will-change: transform;
+  transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Slower, smoother animation curve */
 }
 
-.flip-card-inner.flipping {
-  animation: flipCard 0.6s ease forwards;
-  transform-style: preserve-3d;
+/* Add animation classes */
+.flip-card-container.flipping {
+  transform: rotateY(180deg);
 }
 
-.flip-card-inner.flipping-back {
-  animation: flipCardBack 0.6s ease forwards;
-  transform-style: preserve-3d;
+.flip-card-container.flipping-back {
+  transform: rotateY(-180deg);
 }
 
-.flip-card-front, .flip-card-back {
+/* Add fading animation */
+.flip-card-container.fading .flip-card-side,
+.flip-card-container.fading {
+  opacity: 0.5;
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Apply a smooth transition for opacity */
+.flip-card-side {
+  transition: opacity 0.3s ease-in-out;
+}
+
+/* Card sides */
+.flip-card-side {
   position: absolute;
   width: 100%;
   height: 100%;
-  color: white;
-  border-radius: 0.75rem;
-  backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+  border-radius: 0.75rem;
+  overflow: hidden; /* Ensure content doesn't overflow */
 }
 
 .flip-card-front {
+  z-index: 2;
   transform: rotateY(0deg);
 }
 
-.flip-card-back {
-  transform: rotateY(180deg);
+/* Handle back face visibility during flip */
+.flip-card-container.flipping .flip-card-front,
+.flip-card-container.flipping-back .flip-card-front {
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  -moz-backface-visibility: hidden;
+}
+
+/* Add some depth to the 3D effect with subtle shadows */
+.flip-card-inner:hover {
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation for content to prevent it from appearing before card flip */
+.card-content-fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 /* Text animations */
@@ -122,9 +155,28 @@
   transition: filter 0.3s ease;
 }
 
+/* Mobile flip animation classes */
+.rotate-y-0 {
+  transform: rotateY(0deg);
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.rotate-y-minus-180 {
+  transform: rotateY(-180deg);
+}
+
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
 /* Responsive adjustments */
 @media (max-width: 640px) {
   .flip-card {
-    height: 400px;
+    height: 300px;
   }
 }

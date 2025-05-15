@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useDeviceContext } from '../contexts/DeviceContext';
 
 interface AnimatedBackgroundProps {
   variant?: 'default' | 'darker';
@@ -6,9 +7,13 @@ interface AnimatedBackgroundProps {
 
 const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ variant = 'default' }) => {
   const interactiveRef = useRef<HTMLDivElement>(null);
+  const { deviceType } = useDeviceContext();
+  const isMobileOrTablet = deviceType === 'mobile' || deviceType === 'tablet';
   
-  // For interactive gradient movement
+  // For interactive gradient movement - only on desktop
   useEffect(() => {
+    if (isMobileOrTablet) return; // Skip animation for mobile/tablet devices
+    
     const interBubble = interactiveRef.current;
     if (!interBubble) return;
     
@@ -37,7 +42,7 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ variant = 'defa
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
     };
-  }, []);
+  }, [isMobileOrTablet]);
 
   // Adjust colors based on variant
   const gradientColors = variant === 'darker' ? {
@@ -56,6 +61,39 @@ const AnimatedBackground: React.FC<AnimatedBackgroundProps> = ({ variant = 'defa
     interactive: 'rgba(52, 211, 153, 0.8)' // Default interactive
   };
 
+  // Simple static background for mobile/tablet devices
+  if (isMobileOrTablet) {
+    return (
+      <div className="absolute inset-0 z-0 overflow-hidden bg-emerald-950" style={{ backgroundColor: '#0F3D2F' }}>
+        {/* Simple noise SVG filter - lighter for mobile/tablet */}
+        <svg 
+          viewBox="0 0 100vw 100vw"
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0 w-full h-full opacity-20 mix-blend-soft-light">
+          <filter id="noiseFilterMobile">
+            <feTurbulence 
+              type="fractalNoise"
+              baseFrequency="0.5"
+              stitchTiles="stitch" />
+          </filter>
+          <rect
+            width="100%"
+            height="100%"
+            filter="url(#noiseFilterMobile)" />
+        </svg>
+        
+        {/* Simple gradient overlay */}
+        <div className="absolute inset-0" 
+             style={{ 
+               background: `radial-gradient(circle at center, ${gradientColors.g1} 0, ${gradientColors.g1.replace(', 0.8', ', 0.3')} 70%, transparent 100%)`,
+               mixBlendMode: 'soft-light',
+             }}>                
+        </div>
+      </div>
+    );
+  }
+
+  // Rich animated background for desktop
   return (
     <div className="absolute inset-0 z-0 gradient-bg overflow-hidden bg-emerald-950" style={{ backgroundColor: '#0F3D2F' }}>
       {/* Noise SVG filter */}

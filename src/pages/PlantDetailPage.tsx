@@ -1,25 +1,114 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen, Heart, Share2 } from 'lucide-react';
-import { getPlantById, getFeaturedPlants } from '../services/plantService';
+// Import both services to ensure we have a fallback
+import * as supabaseService from '../services/supabasePlantService';
+import * as localService from '../services/plantService';
 import { PlantInfo } from '../components/PlantCard';
 import PlantGrid from '../components/PlantGrid';
 import AnimatedElement from '../components/AnimatedElement';
 
 const PlantDetailPage: React.FC = () => {
+  // Temperature conversion functions
+  const convertToCelsius = (fahrenheit: string): string => {
+    // Extract numbers from string like "65-75"
+    const matches = fahrenheit.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowF = parseFloat(matches[1]);
+    const highF = parseFloat(matches[2]);
+    
+    // Convert to Celsius: (F - 32) * 5/9
+    const lowC = Math.round((lowF - 32) * 5 / 9);
+    const highC = Math.round((highF - 32) * 5 / 9);
+    
+    return `${lowC}-${highC}°C`;
+  };
+  
+  const convertToFahrenheit = (celsius: string): string => {
+    // Extract numbers from string like "18-24°C"
+    const matches = celsius.match(/([\d.]+)-([\d.]+)/); 
+    if (!matches) return "";
+    
+    const lowC = parseFloat(matches[1]);
+    const highC = parseFloat(matches[2]);
+    
+    // Convert to Fahrenheit: (C * 9/5) + 32
+    const lowF = Math.round((lowC * 9 / 5) + 32);
+    const highF = Math.round((highC * 9 / 5) + 32);
+    
+    return `${lowF}-${highF}°F`;
+  };
   const { id } = useParams<{ id: string }>();
   const [plant, setPlant] = useState<PlantInfo | null>(null);
-  const similarPlants = getFeaturedPlants(4);
-
+  const [similarPlants, setSimilarPlants] = useState<PlantInfo[]>([]);
+  
+  // Fetch similar plants
   useEffect(() => {
-    if (id) {
-      const plantData = getPlantById(id);
-      if (plantData) {
-        setPlant(plantData);
+    const fetchSimilarPlants = async () => {
+      try {
+        // Try Supabase first, fall back to local service
+        let plants;
+        try {
+          plants = await supabaseService.getFeaturedPlants(4);
+        } catch (e) {
+          console.log('Falling back to local service for featured plants');
+          plants = localService.getFeaturedPlants(4);
+        }
+        setSimilarPlants(plants);
+      } catch (error) {
+        console.error('Error fetching similar plants:', error);
       }
-    }
+    };
+    
+    fetchSimilarPlants();
+  }, []);
+
+  // Added loading state
+  const [loading, setLoading] = useState(true);
+  
+  useEffect(() => {
+    const fetchPlantData = async () => {
+      if (id) {
+        setLoading(true);
+        console.log('Attempting to fetch plant with ID:', id);
+        try {
+          // Try Supabase first
+          let plantData;
+          try {
+            plantData = await supabaseService.getPlantById(id);
+          } catch (e) {
+            console.log('Falling back to local service for plant details');
+            plantData = localService.getPlantById(id);
+          }
+          
+          console.log('Plant data retrieved:', plantData);
+          if (plantData) {
+            setPlant(plantData);
+          } else {
+            console.error('Plant not found with ID:', id);
+          }
+        } catch (error) {
+          console.error('Error fetching plant data:', error);
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchPlantData();
   }, [id]);
 
+  if (loading) {
+    return (
+      <div className="bg-emerald-950 min-h-screen pt-24 pb-16 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-emerald-400 text-lg mb-4">Loading plant details...</p>
+        </div>
+      </div>
+    );
+  }
+  
   if (!plant) {
     return (
       <div className="bg-emerald-950 min-h-screen pt-24 pb-16 flex items-center justify-center">
@@ -229,7 +318,27 @@ const PlantDetailPage: React.FC = () => {
                           <span className="text-sm text-emerald-300 mb-1">Temperature</span>
                           <div className="flex items-center">
                             <ThermometerSnowflake className="h-5 w-5 text-emerald-400 mr-2" />
-                            <span className="text-emerald-300">{plant.temperature}</span>
+                            <div className="text-emerald-300 font-medium flex items-center">
+                              {plant.temperature.includes('°F') ? (
+                                <>
+                                  <span>{plant.temperature}</span>
+                                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                                  <span>{convertToCelsius(plant.temperature)}</span>
+                                </>
+                              ) : plant.temperature.includes('°C') ? (
+                                <>
+                                  <span>{convertToFahrenheit(plant.temperature)}</span>
+                                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                                  <span>{plant.temperature}</span>
+                                </>
+                              ) : (
+                                <>
+                                  <span>{plant.temperature}°F</span>
+                                  <span className="mx-2 h-3.5 w-0.5 bg-emerald-500/60"></span>
+                                  <span>{convertToCelsius(plant.temperature + '°F')}</span>
+                                </>
+                              )}
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -271,11 +380,17 @@ const PlantDetailPage: React.FC = () => {
         </div>
 
         <AnimatedElement delay={0.5}>
-          <PlantGrid 
-            plants={similarPlants.filter(p => p.id !== plant.id)} 
-            title="Similar Plants You Might Like"
-            description="Browse other plants with similar care requirements"
-          />
+          {similarPlants.length > 0 ? (
+            <PlantGrid 
+              plants={similarPlants.filter(p => p.id !== plant.id)} 
+              title="Similar Plants You Might Like"
+              description="Browse other plants with similar care requirements"
+            />
+          ) : (
+            <div className="text-center py-8">
+              <p className="text-emerald-400">Loading similar plants...</p>
+            </div>
+          )}
         </AnimatedElement>
       </div>
     </div>

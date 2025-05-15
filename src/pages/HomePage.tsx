@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
           <Hero />
         </AnimatedElement>
         
-        <AnimatedElement delay={0.2} className="pt-0 pb-16 -mt-8">
+        <AnimatedElement delay={0.2} className="pt-0 pb-0 mt-0 md:mt-0">
           <PlantGrid 
             plants={popularPlants} 
             title="Popular Plants"
