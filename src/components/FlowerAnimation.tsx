@@ -1,8 +1,42 @@
 import React, { useEffect } from 'react';
+// Import CSS with higher specificity to ensure it's not removed by production optimization
 import '../styles/flowerAnimation.css';
+
+// Define animation styles inline to ensure they're included in the bundle
+const inlineStyles = `
+  @keyframes blooming-leaf-right {
+    0% { transform: rotate(0deg); }
+  }
+  @keyframes blooming-leaf-left {
+    0% { transform: rotate(0deg); }
+  }
+  @keyframes blooming-flower {
+    0% { transform: scale(0); }
+  }
+  @keyframes grow-ans {
+    0% { height: 0; }
+  }
+  @keyframes moving-flower-1 {
+    0%, 100% { transform: rotate(2deg); }
+    50% { transform: rotate(-2deg); }
+  }
+  @keyframes moving-flower-2 {
+    0%, 100% { transform: rotate(18deg); }
+    50% { transform: rotate(22deg); }
+  }
+  @keyframes moving-flower-3 {
+    0%, 100% { transform: rotate(-18deg); }
+    50% { transform: rotate(-12deg); }
+  }
+`;
 
 const FlowerAnimation: React.FC = () => {
   useEffect(() => {
+    // Add the inline styles to the document to ensure animations work in production
+    const styleElement = document.createElement('style');
+    styleElement.innerHTML = inlineStyles;
+    document.head.appendChild(styleElement);
+    
     // Remove the container class after component mounts (similar to what the original main.js did)
     const timer = setTimeout(() => {
       const flowerContainer = document.getElementById('flower-container');
@@ -11,7 +45,11 @@ const FlowerAnimation: React.FC = () => {
       }
     }, 1000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Clean up the style element when component unmounts
+      document.head.removeChild(styleElement);
+    };
   }, []);
 
   return (
