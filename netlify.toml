@@ -1,0 +1,30 @@
+# Netlify configuration file
+# This ensures proper routing for single page applications
+
+[build]
+  # Directory with the built files
+  publish = "dist"
+  # Build command
+  command = "npm run build"
+
+# This section ensures all routes go to index.html (required for SPA)
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+  
+# Cache control for assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    
+[[headers]]
+  for = "/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+    
+[[headers]]
+  for = "/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
