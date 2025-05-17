@@ -1,5 +1,5 @@
 import React from 'react';
-import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen } from 'lucide-react';
+import { ArrowLeft, BookOpen } from 'lucide-react';
 import PlantLikeButton from './PlantLikeButton';
 import PlantShareButton from './PlantShareButton';
 import { PlantInfo } from './PlantInfo';
@@ -43,8 +43,7 @@ const PlantResult: React.FC<PlantResultProps> = ({ plant, image, onReset }) => {
     plant.name,
     plant.wateringNeeds,
     plant.sunlight,
-    plant.temperature,
-    plant.description
+    plant.temperature
   );
 
   return (
@@ -153,8 +152,7 @@ function generateCareInstructions(
   plantName: string,
   wateringNeeds: 'low' | 'medium' | 'high',
   sunlight: 'low' | 'medium' | 'high',
-  temperature: string,
-  description: string
+  temperature: string
 ) {
   // Default instructions that will be customized
   const careInstructions = {
@@ -206,7 +204,7 @@ function generateFactsFromDescription(description: string): string[] {
   if (!description) return [
     "Plant identification complete.",
     "Check out our other features to learn more about plants.",
-    "You can save this plant to your collection.",
+    "You can like this plant to add it to your favorites.",
     "Share this information with fellow plant enthusiasts.",
     "Every plant has unique care requirements."
   ];

@@ -2,8 +2,62 @@ import React, { useEffect } from 'react';
 // Import CSS with higher specificity to ensure it's not removed by production optimization
 import '../styles/flowerAnimation.css';
 
-// Define animation styles inline to ensure they're included in the bundle
+// Define COMPLETE animation styles inline to ensure they're ALL included in the bundle
 const inlineStyles = `
+  /* Essential Flower Animation styles */
+  .flower-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
+    background-color: transparent;
+    perspective: 1000px;
+    overflow: hidden;
+  }
+
+  .night {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    transform: translateX(-50%);
+    width: 100%;
+    height: 100%;
+    filter: blur(0.1vmin);
+    background-image: radial-gradient(
+        ellipse at top,
+        transparent 0%,
+        rgba(0, 0, 0, 0.8)
+      ),
+      radial-gradient(
+        ellipse at bottom,
+        rgba(0, 0, 0, 0.8),
+        rgba(145, 233, 255, 0.2)
+      ),
+      repeating-linear-gradient(
+        220deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 19px,
+        transparent 19px,
+        transparent 22px
+      ),
+      repeating-linear-gradient(
+        189deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 19px,
+        transparent 19px,
+        transparent 22px
+      ),
+      repeating-linear-gradient(
+        148deg,
+        rgba(0, 0, 0, 0) 0px,
+        rgba(0, 0, 0, 0) 19px,
+        transparent 19px,
+        transparent 22px
+      ),
+      linear-gradient(90deg, rgb(0, 255, 250), rgb(240, 240, 240));
+    opacity: 0.3;
+  }
+  
   @keyframes blooming-leaf-right {
     0% { transform: rotate(0deg); }
   }
