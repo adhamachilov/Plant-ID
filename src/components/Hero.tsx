@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { Camera, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useDeviceContext } from '../contexts/DeviceContext';
@@ -10,6 +10,50 @@ const CopyBeeModel = () => {
   console.log('Remember to ensure bee model is in public/3d/ folder');
   
   return null;
+};
+
+// Lazy loaded bee model component with loading optimization
+const LazyBeeModel = () => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+  
+  // Only load the bee model after a short delay to prioritize essential content
+  useEffect(() => {
+    // Add small delay before loading the 3D model to improve perceived performance
+    const timer = setTimeout(() => {
+      setShouldRender(true);
+    }, 500);
+    
+    return () => clearTimeout(timer);
+  }, []);
+  
+  return shouldRender ? (
+    <div className="relative w-full h-full">
+      {!isLoaded && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="w-10 h-10 border-4 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+      <iframe 
+        src="/transparent-bee.html" 
+        title="3D Bee Model"
+        className={`absolute transition-opacity duration-500 ${isLoaded ? 'opacity-100' : 'opacity-0'}`}
+        style={{
+          width: "120%",
+          height: "850px",
+          border: "none",
+          background: "transparent",
+          pointerEvents: "auto",
+          top: "-230px",
+          left: "-20%"
+        }}
+        frameBorder="0"
+        scrolling="no"
+        allowTransparency={true}
+        onLoad={() => setIsLoaded(true)}
+      ></iframe>
+    </div>
+  ) : null;
 };
 
 const Hero: React.FC = () => {
@@ -49,26 +93,10 @@ const Hero: React.FC = () => {
             </div>
           </div>
           
-          {/* 3D Bee Model container - only visible on desktop */}
+          {/* 3D Bee Model container - only visible on desktop with lazy loading */}
           {isDesktop && (
             <div className="relative" style={{ height: "600px", position: "relative" }}>
-              <iframe 
-                src="/transparent-bee.html" 
-                title="3D Bee Model"
-                className="absolute"
-                style={{
-                  width: "120%", /* Increased from 100% to 120% */
-                  height: "850px", /* Increased from 750px to 850px */
-                  border: "none",
-                  background: "transparent",
-                  pointerEvents: "auto", // Enable interaction with the bee
-                  top: "-230px", /* Adjusted to position bee slightly lower */
-                  left: "-20%" /* Shifts 20% to the left */
-                }}
-                frameBorder="0"
-                scrolling="no"
-                allowTransparency={true}
-              ></iframe>
+              <LazyBeeModel />
             </div>
           )}
           

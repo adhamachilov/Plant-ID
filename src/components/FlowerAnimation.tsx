@@ -1,220 +1,152 @@
-import React, { useEffect } from 'react';
-// Import CSS with higher specificity to ensure it's not removed by production optimization
-import '../styles/flowerAnimation.css';
+import React, { useEffect, useState, useRef } from 'react';
+import '../styles/ribbonAnimation.css';
+// Import the hero image
+// @ts-ignore
+import plantImage from '../../assets/hero/1.png';
 
-// Define COMPLETE animation styles inline to ensure they're ALL included in the bundle
-const inlineStyles = `
-  /* Essential Flower Animation styles */
-  .flower-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: 400px;
-    background-color: transparent;
-    perspective: 1000px;
-    overflow: hidden;
-  }
+// Simple animation component for a plant image with ribbon-style drawing effect
+const PlantAnimation: React.FC = () => {
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const [textVisible, setTextVisible] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isVisible, setIsVisible] = useState(false);
+  const requestRef = useRef<number>(0);
+  const startTimeRef = useRef<number | null>(null);
 
-  .night {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    transform: translateX(-50%);
-    width: 100%;
-    height: 100%;
-    filter: blur(0.1vmin);
-    background-image: radial-gradient(
-        ellipse at top,
-        transparent 0%,
-        rgba(0, 0, 0, 0.8)
-      ),
-      radial-gradient(
-        ellipse at bottom,
-        rgba(0, 0, 0, 0.8),
-        rgba(145, 233, 255, 0.2)
-      ),
-      repeating-linear-gradient(
-        220deg,
-        rgba(0, 0, 0, 0) 0px,
-        rgba(0, 0, 0, 0) 19px,
-        transparent 19px,
-        transparent 22px
-      ),
-      repeating-linear-gradient(
-        189deg,
-        rgba(0, 0, 0, 0) 0px,
-        rgba(0, 0, 0, 0) 19px,
-        transparent 19px,
-        transparent 22px
-      ),
-      repeating-linear-gradient(
-        148deg,
-        rgba(0, 0, 0, 0) 0px,
-        rgba(0, 0, 0, 0) 19px,
-        transparent 19px,
-        transparent 22px
-      ),
-      linear-gradient(90deg, rgb(0, 255, 250), rgb(240, 240, 240));
-    opacity: 0.3;
-  }
+  // Animation duration in milliseconds
+  const ANIMATION_DURATION = 2000;
   
-  @keyframes blooming-leaf-right {
-    0% { transform: rotate(0deg); }
-  }
-  @keyframes blooming-leaf-left {
-    0% { transform: rotate(0deg); }
-  }
-  @keyframes blooming-flower {
-    0% { transform: scale(0); }
-  }
-  @keyframes grow-ans {
-    0% { height: 0; }
-  }
-  @keyframes moving-flower-1 {
-    0%, 100% { transform: rotate(2deg); }
-    50% { transform: rotate(-2deg); }
-  }
-  @keyframes moving-flower-2 {
-    0%, 100% { transform: rotate(18deg); }
-    50% { transform: rotate(22deg); }
-  }
-  @keyframes moving-flower-3 {
-    0%, 100% { transform: rotate(-18deg); }
-    50% { transform: rotate(-12deg); }
-  }
-`;
-
-const FlowerAnimation: React.FC = () => {
+  // Setup Intersection Observer to trigger animation when scrolled into view
   useEffect(() => {
-    // Add the inline styles to the document to ensure animations work in production
-    const styleElement = document.createElement('style');
-    styleElement.innerHTML = inlineStyles;
-    document.head.appendChild(styleElement);
-    
-    // Remove the container class after component mounts (similar to what the original main.js did)
-    const timer = setTimeout(() => {
-      const flowerContainer = document.getElementById('flower-container');
-      if (flowerContainer) {
-        flowerContainer.classList.remove('container');
-      }
-    }, 1000);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting) {
+          setIsVisible(true);
+          observer.disconnect();
+        }
+      },
+      { threshold: 0.3 }
+    );
 
-    return () => {
-      clearTimeout(timer);
-      // Clean up the style element when component unmounts
-      document.head.removeChild(styleElement);
-    };
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => observer.disconnect();
   }, []);
 
+  // Animation loop using requestAnimationFrame
+  useEffect(() => {
+    if (!isVisible) return;
+
+    const animate = (timestamp: number) => {
+      if (startTimeRef.current === null) {
+        startTimeRef.current = timestamp;
+      }
+
+      const elapsed = timestamp - startTimeRef.current;
+      const progress = Math.min(elapsed / ANIMATION_DURATION, 1);
+      
+      setAnimationProgress(progress);
+      
+      if (progress < 1) {
+        requestRef.current = requestAnimationFrame(animate);
+      } else {
+        // Animation completed, show text
+        setTextVisible(true);
+      }
+    };
+
+    requestRef.current = requestAnimationFrame(animate);
+    
+    return () => {
+      cancelAnimationFrame(requestRef.current);
+    };
+  }, [isVisible]);
+
+  // Convert progress to SVG path for the clipping mask
+  const getClipPath = () => {
+    if (animationProgress === 0) return 'polygon(0% 0%, 0% 0%, 0% 0%)';
+    if (animationProgress <= 0.25) {
+      const p = animationProgress * 4; // Scale to 0-1 range for this segment
+      return `polygon(0% 0%, ${p * 100}% 0%, 0% ${p * 25}%)`;
+    } else if (animationProgress <= 0.5) {
+      const p = (animationProgress - 0.25) * 4; // Scale to 0-1 range for this segment
+      return `polygon(0% 0%, 100% 0%, ${p * 100}% ${p * 50}%, 0% 50%)`;
+    } else if (animationProgress <= 0.75) {
+      const p = (animationProgress - 0.5) * 4; // Scale to 0-1 range for this segment
+      return `polygon(0% 0%, 100% 0%, 100% ${p * 75}%, 0% ${50 + p * 50}%)`;
+    } else {
+      const p = (animationProgress - 0.75) * 4; // Scale to 0-1 range for this segment
+      return `polygon(0% 0%, 100% 0%, 100% ${75 + p * 25}%, 0% 100%)`;
+    }
+  };
+
   return (
-    <div id="flower-container" className="flower-container">
-      <div className="night"></div>
-      <div className="flowers">
-        <div className="flower flower--1">
-          <div className="flower__leafs flower__leafs--1">
-            <div className="flower__leaf flower__leaf--1"></div>
-            <div className="flower__leaf flower__leaf--2"></div>
-            <div className="flower__leaf flower__leaf--3"></div>
-            <div className="flower__leaf flower__leaf--4"></div>
-            <div className="flower__white-circle"></div>
-    
-            <div className="flower__light flower__light--1"></div>
-            <div className="flower__light flower__light--2"></div>
-            <div className="flower__light flower__light--3"></div>
-            <div className="flower__light flower__light--4"></div>
-            <div className="flower__light flower__light--5"></div>
-            <div className="flower__light flower__light--6"></div>
-            <div className="flower__light flower__light--7"></div>
-            <div className="flower__light flower__light--8"></div>
-    
-          </div>
-          <div className="flower__line">
-            <div className="flower__line__leaf flower__line__leaf--1"></div>
-            <div className="flower__line__leaf flower__line__leaf--2"></div>
-            <div className="flower__line__leaf flower__line__leaf--3"></div>
-            <div className="flower__line__leaf flower__line__leaf--4"></div>
-            <div className="flower__line__leaf flower__line__leaf--5"></div>
-            <div className="flower__line__leaf flower__line__leaf--6"></div>
-          </div>
+    <div 
+      ref={containerRef}
+      style={{
+        width: '100%',
+        height: '400px',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        position: 'relative',
+      }}
+    >
+      <div 
+        style={{
+          position: 'relative',
+          width: '300px',
+          height: '300px',
+        }}
+      >
+        {/* Image with clipping animation */}
+        <div
+          style={{
+            position: 'relative',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+          }}
+        >
+          <img 
+            src={plantImage} 
+            alt="Plant Illustration"
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'contain',
+              clipPath: getClipPath(),
+              WebkitClipPath: getClipPath(),
+              transition: 'clip-path 0.1s ease, -webkit-clip-path 0.1s ease',
+            }}
+          />
         </div>
-    
-        <div className="flower flower--2">
-          <div className="flower__leafs flower__leafs--2">
-            <div className="flower__leaf flower__leaf--1"></div>
-            <div className="flower__leaf flower__leaf--2"></div>
-            <div className="flower__leaf flower__leaf--3"></div>
-            <div className="flower__leaf flower__leaf--4"></div>
-            <div className="flower__white-circle"></div>
-    
-            <div className="flower__light flower__light--1"></div>
-            <div className="flower__light flower__light--2"></div>
-            <div className="flower__light flower__light--3"></div>
-            <div className="flower__light flower__light--4"></div>
-            <div className="flower__light flower__light--5"></div>
-            <div className="flower__light flower__light--6"></div>
-            <div className="flower__light flower__light--7"></div>
-            <div className="flower__light flower__light--8"></div>
-    
-          </div>
-          <div className="flower__line">
-            <div className="flower__line__leaf flower__line__leaf--1"></div>
-            <div className="flower__line__leaf flower__line__leaf--2"></div>
-            <div className="flower__line__leaf flower__line__leaf--3"></div>
-            <div className="flower__line__leaf flower__line__leaf--4"></div>
-          </div>
-        </div>
-    
-        <div className="flower flower--3">
-          <div className="flower__leafs flower__leafs--3">
-            <div className="flower__leaf flower__leaf--1"></div>
-            <div className="flower__leaf flower__leaf--2"></div>
-            <div className="flower__leaf flower__leaf--3"></div>
-            <div className="flower__leaf flower__leaf--4"></div>
-            <div className="flower__white-circle"></div>
-    
-            <div className="flower__light flower__light--1"></div>
-            <div className="flower__light flower__light--2"></div>
-            <div className="flower__light flower__light--3"></div>
-            <div className="flower__light flower__light--4"></div>
-            <div className="flower__light flower__light--5"></div>
-            <div className="flower__light flower__light--6"></div>
-            <div className="flower__light flower__light--7"></div>
-            <div className="flower__light flower__light--8"></div>
-    
-          </div>
-          <div className="flower__line">
-            <div className="flower__line__leaf flower__line__leaf--1"></div>
-            <div className="flower__line__leaf flower__line__leaf--2"></div>
-            <div className="flower__line__leaf flower__line__leaf--3"></div>
-            <div className="flower__line__leaf flower__line__leaf--4"></div>
-          </div>
-        </div>
-    
-        <div className="grow-ans" style={{ "--d": "1.2s" } as React.CSSProperties}>
-          <div className="flower__g-long">
-            <div className="flower__g-long__top"></div>
-            <div className="flower__g-long__bottom"></div>
-          </div>
-        </div>
-    
-        <div className="growing-grass">
-          <div className="flower__grass flower__grass--1">
-            <div className="flower__grass--top"></div>
-            <div className="flower__grass--bottom"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--1"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--2"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--3"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--4"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--5"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--6"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--7"></div>
-            <div className="flower__grass__leaf flower__grass__leaf--8"></div>
-            <div className="flower__grass__overlay"></div>
-          </div>
+        
+        {/* Text overlay */}
+        <div 
+          style={{
+            position: 'absolute',
+            bottom: '20px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            textAlign: 'center',
+            color: '#ffffff',
+            fontSize: '28px',
+            fontWeight: 'bold',
+            textShadow: '0 0 10px rgba(0,0,0,0.6)',
+            opacity: textVisible ? 1 : 0,
+            transition: 'opacity 0.8s ease',
+          }}
+        >
+          Plant ID
         </div>
       </div>
     </div>
   );
 };
 
+// Export as FlowerAnimation for backwards compatibility
+const FlowerAnimation = PlantAnimation;
 export default FlowerAnimation;

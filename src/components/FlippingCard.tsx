@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Camera, Search, Leaf, ChevronRight, ChevronLeft } from 'lucide-react';
 import { useDeviceContext } from '../contexts/DeviceContext';
 import '../styles/flipCard.css';
+// Ensure the flip animation styles are properly applied
 
 interface CardContent {
   icon: React.ReactNode;
@@ -42,15 +43,15 @@ const FlippingCard: React.FC = () => {
     }
   ];
 
-  // Effect to handle the fading animation after flipping
+  // Effect to handle card content updating after rotation completes
   useEffect(() => {
     if (nextIndex !== null && !isFlipping) {
-      setIsFading(true);
+      // Card has finished flipping, now update the content
       const timer = setTimeout(() => {
         setCurrentIndex(nextIndex);
         setNextIndex(null);
         setIsFading(false);
-      }, 300); // Short fade animation
+      }, 100); // Much shorter delay after flip completes
       
       return () => clearTimeout(timer);
     }
@@ -63,8 +64,9 @@ const FlippingCard: React.FC = () => {
         // Simple transition for mobile
         setCurrentIndex(currentIndex + 1);
       } else {
-        // Start flipping animation
+        // Start flipping animation and fading simultaneously
         setIsFlipping(true);
+        setIsFading(true);
         setDirection('next');
         
         // Store the next index
@@ -85,8 +87,9 @@ const FlippingCard: React.FC = () => {
         // Simple transition for mobile
         setCurrentIndex(currentIndex - 1);
       } else {
-        // Start flipping animation
+        // Start flipping animation and fading simultaneously
         setIsFlipping(true);
+        setIsFading(true);
         setDirection('prev');
         
         // Store the previous index
@@ -145,7 +148,7 @@ const FlippingCard: React.FC = () => {
 
   // Enhanced desktop card with flip animation and text fading effects
   const renderDesktopCard = () => {
-    // Generate classes for the animations
+    // Generate classes for the animations - use simpler animation classes
     const flipClass = isFlipping ? (direction === 'next' ? 'flipping' : 'flipping-back') : '';
     const currentCard = cards[currentIndex];
     

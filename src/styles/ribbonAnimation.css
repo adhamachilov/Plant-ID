@@ -1,0 +1,254 @@
+/* Simple CSS Heart Animation */
+.heart-animation-container {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  padding: 100px 0;
+  margin: 20px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  z-index: 10;
+}
+
+.green-backdrop {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(6, 78, 59, 0.2);
+  z-index: 0;
+}
+
+.heart-wrapper {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.animated-heart {
+  position: relative;
+  width: 250px;
+  height: 250px;
+  margin: 0 auto;
+  animation: float 3s ease-in-out infinite;
+  z-index: 20;
+}
+
+/* Pure CSS heart */
+.heart {
+  background-color: #ff2050; /* Brighter, more vibrant red */
+  height: 160px; /* Larger heart */
+  width: 160px;
+  transform: rotate(-45deg);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -80px; /* Half of height */
+  margin-left: -80px; /* Half of width */
+  animation: heart-write 2s ease forwards, heart-pulse 1.5s infinite alternate ease-in-out 2s;
+  box-shadow: 0 0 40px rgba(255, 32, 80, 0.8); /* Brighter glow */
+}
+
+.heart:before,
+.heart:after {
+  content: '';
+  background-color: #ff2050; /* Match heart color */
+  height: 160px; /* Match heart size */
+  width: 160px;
+  border-radius: 50%;
+  position: absolute;
+  box-shadow: 0 0 40px rgba(255, 32, 80, 0.8); /* Match heart glow */
+}
+
+.heart:before {
+  top: -50px;
+  left: 0;
+  animation: heart-part-write 2s ease forwards;
+}
+
+.heart:after {
+  top: 0;
+  left: 50px;
+  animation: heart-part-write 2s ease forwards;
+}
+
+.text {
+  position: absolute;
+  width: 100%;
+  text-align: center;
+  color: white;
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Arial', sans-serif;
+  text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  animation: text-appear 1s ease forwards 2s;
+}
+
+/* Heart writing animation */
+@keyframes heart-write {
+  0% {
+    height: 0;
+    width: 0;
+    opacity: 0;
+  }
+  50% {
+    height: 50px;
+    width: 50px;
+    opacity: 0.5;
+  }
+  100% {
+    height: 100px;
+    width: 100px;
+    opacity: 1;
+  }
+}
+
+/* Heart parts writing animation */
+@keyframes heart-part-write {
+  0% {
+    height: 0;
+    width: 0;
+  }
+  50% {
+    height: 50px;
+    width: 50px;
+  }
+  100% {
+    height: 100px;
+    width: 100px;
+  }
+}
+
+/* Text appearing animation */
+@keyframes text-appear {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Floating animation */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Heart pulsing animation */
+@keyframes heart-pulse {
+  0% {
+    transform: rotate(-45deg) scale(1);
+    box-shadow: 0 0 30px rgba(255, 58, 94, 0.6);
+  }
+  50% {
+    transform: rotate(-45deg) scale(1.1);
+    box-shadow: 0 0 40px rgba(255, 58, 94, 0.8);
+  }
+  100% {
+    transform: rotate(-45deg) scale(1);
+    box-shadow: 0 0 30px rgba(255, 58, 94, 0.6);
+  }
+}
+
+/* Hero Image Ribbon Animation */
+.hero-image-container {
+  position: relative;
+  width: 100%;
+  min-height: 400px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  z-index: 20;
+}
+
+.hero-image-wrapper {
+  position: relative;
+  width: 350px;
+  height: 350px;
+  margin: 0 auto;
+}
+
+.hero-image {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+/* Ribbon drawing animation */
+@keyframes ribbon-draw {
+  0% {
+    clip-path: polygon(0% 0%, 0% 0%, 0% 0%);
+    -webkit-clip-path: polygon(0% 0%, 0% 0%, 0% 0%);
+  }
+  25% {
+    clip-path: polygon(0% 0%, 100% 0%, 0% 25%);
+    -webkit-clip-path: polygon(0% 0%, 100% 0%, 0% 25%);
+  }
+  50% {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
+    -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 50%, 0% 50%);
+  }
+  75% {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 0% 100%);
+    -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 75%, 0% 100%);
+  }
+  100% {
+    clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+    -webkit-clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .animated-heart {
+    width: 120px;
+    height: 120px;
+  }
+  
+  .heart {
+    height: 80px;
+    width: 80px;
+    margin-top: -40px;
+    margin-left: -40px;
+  }
+  
+  .heart:before,
+  .heart:after {
+    height: 80px;
+    width: 80px;
+  }
+  
+  .heart:before {
+    top: -40px;
+  }
+  
+  .heart:after {
+    left: 40px;
+  }
+  
+  .text {
+    font-size: 20px;
+  }
+  
+  .hero-image-wrapper {
+    width: 280px;
+    height: 280px;
+  }
+}

@@ -277,7 +277,7 @@ function generateFactsFromDescription(description: string): string[] {
   if (!description) return [
     "Plant identification complete.",
     "Check out our other features to learn more about plants.",
-    "You can save this plant to your collection.",
+    "You can like this plant to add it to your favorites.",
     "Share this information with fellow plant enthusiasts.",
     "Every plant has unique care requirements."
   ];

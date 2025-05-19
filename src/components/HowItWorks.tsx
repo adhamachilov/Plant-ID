@@ -2,6 +2,7 @@ import React from 'react';
 import FlippingCard from './FlippingCard';
 import '../styles/flipCard.css';
 import { useDeviceContext } from '../contexts/DeviceContext';
+import PlantModel3D from './PlantModel3D';
 
 const HowItWorks: React.FC = () => {
   const { isMobile, isTablet, isDesktop } = useDeviceContext();
@@ -21,24 +22,11 @@ const HowItWorks: React.FC = () => {
 
         {/* Layout depends on device - One column for mobile/tablet, two columns for desktop */}
         <div className={`flex flex-col ${isDesktop ? 'md:flex-row' : ''} items-center`}>
-          {/* Flower Animation - Only shown on desktop */}
+          {/* 3D Plant Model - Only shown on desktop */}
           {isDesktop && (
-            <div className="md:w-3/5 flex justify-center items-center" style={{ height: '500px' }}>
-              <div className="transform scale-90 w-full h-full">
-                <iframe 
-                  src="../../../assets/flower/flower.html" 
-                  title="Flower Animation" 
-                  className="w-full h-full border-0 overflow-hidden bg-transparent rounded-2xl" 
-                  style={{ 
-                    pointerEvents: 'none', 
-                    transform: 'scale(0.95)', 
-                    marginTop: '-5px',
-                    borderRadius: '24px',
-                    height: '500px'
-                  }}
-                  frameBorder="0"
-                  scrolling="no"
-                />
+            <div className="md:w-3/5 flex justify-center items-center" style={{ height: '700px' }}>
+              <div className="w-full h-full">
+                <PlantModel3D />
               </div>
             </div>
           )}
@@ -46,7 +34,7 @@ const HowItWorks: React.FC = () => {
           {/* Flipping Cards - Centered layout for mobile/tablet */}
           <div 
             className={`w-full ${isDesktop ? 'md:w-2/5 md:pl-6' : ''} flex items-center justify-center`}
-            style={{ height: isDesktop ? '500px' : 'auto' }}
+            style={{ height: isDesktop ? '700px' : 'auto' }}
           >
             <FlippingCard />
           </div>

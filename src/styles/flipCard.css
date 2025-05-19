@@ -13,23 +13,43 @@
   transform-style: preserve-3d;
   border-radius: 0.75rem;
   box-shadow: 0 15px 25px rgba(0, 0, 0, 0.2);
-  transition: transform 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Slower, smoother animation curve */
+  transform: rotateY(0deg);
 }
 
-/* Add animation classes */
+/* Single 360-degree animations with no transition property (just animation) */
 .flip-card-container.flipping {
-  transform: rotateY(180deg);
+  animation: flip360 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transform: rotateY(0deg);
 }
 
 .flip-card-container.flipping-back {
-  transform: rotateY(-180deg);
+  animation: flip360Reverse 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+  transform: rotateY(0deg);
 }
 
-/* Add fading animation */
-.flip-card-container.fading .flip-card-side,
-.flip-card-container.fading {
-  opacity: 0.5;
-  transition: opacity 0.3s ease-in-out;
+/* Simple, consistent 360-degree animations */
+@keyframes flip360 {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(360deg); }
+}
+
+@keyframes flip360Reverse {
+  0% { transform: rotateY(0deg); }
+  100% { transform: rotateY(-360deg); }
+}
+
+/* Content fading animation during card rotation */
+.flip-card-side > div {
+  transition: opacity 0.2s ease-in-out;
+}
+
+.flip-card-container.flipping .flip-card-side > div,
+.flip-card-container.flipping-back .flip-card-side > div {
+  opacity: 0.2; /* Fade content during rotation */
+}
+
+.flip-card-container.fading .flip-card-side > div {
+  opacity: 0.2;
 }
 
 /* Apply a smooth transition for opacity */
@@ -52,14 +72,6 @@
 .flip-card-front {
   z-index: 2;
   transform: rotateY(0deg);
-}
-
-/* Handle back face visibility during flip */
-.flip-card-container.flipping .flip-card-front,
-.flip-card-container.flipping-back .flip-card-front {
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  -moz-backface-visibility: hidden;
 }
 
 /* Add some depth to the 3D effect with subtle shadows */
