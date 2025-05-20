@@ -1,5 +1,5 @@
 import { supabase, isSupabaseConfigured } from './supabaseClient';
-import { PlantInfo } from '../components/PlantInfo';
+import { PlantInfo } from '../components/PlantCard';
 import { v4 as uuidv4 } from 'uuid';
 import { analyzeImageWithGemini } from './geminiService';
 

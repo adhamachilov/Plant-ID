@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen, Heart, Share2 } from 'lucide-react';
+import { ArrowLeft, Droplets, Sun, ThermometerSnowflake, BookOpen } from 'lucide-react';
 // Import both services to ensure we have a fallback
 import * as supabaseService from '../services/supabasePlantService';
 import * as localService from '../services/plantService';
 import { PlantInfo } from '../components/PlantCard';
 import PlantGrid from '../components/PlantGrid';
 import AnimatedElement from '../components/AnimatedElement';
+import PlantLikeButton from '../components/PlantLikeButton';
+import PlantShareButton from '../components/PlantShareButton';
 
 const PlantDetailPage: React.FC = () => {
   // Temperature conversion functions
@@ -72,27 +74,73 @@ const PlantDetailPage: React.FC = () => {
       if (id) {
         setLoading(true);
         console.log('Attempting to fetch plant with ID:', id);
-        try {
-          // Try Supabase first
-          let plantData;
-          try {
-            plantData = await supabaseService.getPlantById(id);
-          } catch (e) {
-            console.log('Falling back to local service for plant details');
-            plantData = localService.getPlantById(id);
+        
+        // Skip Supabase and directly use local service for reliable results
+        const plantData = localService.getPlantById(id);
+        console.log('Plant data retrieved from local service:', plantData);
+        
+        if (plantData) {
+          // Extract care instructions and facts if they exist, or generate them
+          let careInst = plantData.careInstructions;
+          if (!careInst) {
+            careInst = {
+              watering: `Water ${plantData.name} when the top inch of soil feels dry.`,
+              light: `Provide ${plantData.sunlight === 'high' ? 'bright direct' : plantData.sunlight === 'medium' ? 'bright indirect' : 'low to moderate'} light.`,
+              soil: 'Well-draining potting mix appropriate for this plant type.',
+              humidity: `Maintain typical indoor humidity and temperature around ${plantData.temperature}.`,
+              fertilizing: 'Apply a balanced fertilizer during the growing season as needed.'
+            };
           }
           
-          console.log('Plant data retrieved:', plantData);
-          if (plantData) {
-            setPlant(plantData);
-          } else {
-            console.error('Plant not found with ID:', id);
+          let factsList = plantData.facts;
+          if (!factsList || factsList.length === 0) {
+            factsList = [
+              `${plantData.name} is known for its beauty and is popular among plant enthusiasts.`,
+              `${plantData.name} requires ${plantData.wateringNeeds === 'high' ? 'regular' : plantData.wateringNeeds === 'medium' ? 'moderate' : 'minimal'} watering.`,
+              `${plantData.name} thrives in ${plantData.sunlight === 'high' ? 'bright' : plantData.sunlight === 'medium' ? 'medium' : 'low'} light conditions.`,
+              `The ideal temperature range for ${plantData.name} is ${plantData.temperature}.`,
+              `With proper care, ${plantData.name} can thrive for many years.`
+            ];
           }
-        } catch (error) {
-          console.error('Error fetching plant data:', error);
-        } finally {
-          setLoading(false);
+          
+          // Set the plant with guaranteed care instructions and facts
+          setPlant({
+            ...plantData,
+            careInstructions: careInst,
+            facts: factsList
+          });
+        } else {
+          console.error('Plant not found with ID:', id);
+          
+          // Create a fallback plant for better user experience
+          const fallbackPlant: PlantInfo = {
+            id: id || 'unknown',
+            name: 'Unknown Plant',
+            scientificName: 'Species unknown',
+            image: '/assets/plants/1.png', // Default image
+            wateringNeeds: 'medium',
+            sunlight: 'medium',
+            temperature: '65-75°F',
+            description: 'Details for this plant are not available. It may have been removed or is still being added to our database.',
+            price: '',
+            careInstructions: {
+              watering: 'Not available',
+              light: 'Not available',
+              soil: 'Not available',
+              humidity: 'Not available',
+              fertilizing: 'Not available'
+            },
+            facts: [
+              'This plant information is currently unavailable.',
+              'Try checking another plant from our featured collection.',
+              'Our database is constantly being updated with new plants.',
+              'You can identify your own plants using our identification tool.',
+              'If you believe this is an error, please contact support.'
+            ]
+          };
+          setPlant(fallbackPlant);
         }
+        setLoading(false);
       }
     };
     
@@ -190,7 +238,19 @@ const PlantDetailPage: React.FC = () => {
     }
   };
   
-  const facts = generateFacts(plant);
+  // Always ensure we have facts - either from the plant or generate them
+  let facts = plant.facts || generateFacts(plant);
+  
+  // Always ensure facts is an array with content
+  if (!facts || !Array.isArray(facts) || facts.length === 0) {
+    facts = [
+      `${plant.name} is known for its beauty and is popular among plant enthusiasts.`,
+      `${plant.name} requires ${plant.wateringNeeds === 'high' ? 'regular' : plant.wateringNeeds === 'medium' ? 'moderate' : 'minimal'} watering.`,
+      `${plant.name} thrives in ${plant.sunlight === 'high' ? 'bright' : plant.sunlight === 'medium' ? 'medium' : 'low'} light conditions.`,
+      `The ideal temperature range for ${plant.name} is ${plant.temperature}.`,
+      `With proper care, ${plant.name} can thrive for many years.`
+    ];
+  }
 
   // Generate care instructions based on the plant type with accurate information from research
   const generateCareInstructions = (plant: PlantInfo) => {
@@ -240,7 +300,11 @@ const PlantDetailPage: React.FC = () => {
     }
   };
   
-  const careInstructions = generateCareInstructions(plant);
+  // Get care instructions from the plant if they exist, otherwise generate them
+  let careInstructions = plant.careInstructions;
+  if (!careInstructions) {
+    careInstructions = generateCareInstructions(plant);
+  }
 
   return (
     <div className="bg-emerald-950 min-h-screen pt-24 pb-16">
@@ -290,14 +354,15 @@ const PlantDetailPage: React.FC = () => {
                     
                     <AnimatedElement delay={0.4}>
                       <div className="flex space-x-4">
-                        <button className="flex items-center justify-center space-x-2 bg-emerald-500 hover:bg-emerald-600 text-emerald-950 flex-1 py-3 rounded-xl font-medium transition-all duration-300">
-                          <Heart className="h-5 w-5" />
-                          <span>Save</span>
-                        </button>
-                        <button className="flex items-center justify-center space-x-2 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 flex-1 py-3 rounded-xl font-medium transition-all duration-300">
-                          <Share2 className="h-5 w-5" />
-                          <span>Share</span>
-                        </button>
+                        <PlantLikeButton 
+                          plantId={plant.id} 
+                          className="flex-1 py-3 rounded-xl font-medium transition-all duration-300 bg-emerald-500/80 hover:bg-emerald-600 text-emerald-950"
+                        />
+                        <PlantShareButton 
+                          plantName={plant.name} 
+                          plantId={plant.id}
+                          className="flex-1 py-4 rounded-xl font-medium transition-all duration-300 bg-transparent border border-emerald-500 hover:bg-emerald-800 text-emerald-400 text-lg"
+                        />
                       </div>
                     </AnimatedElement>
                   </div>

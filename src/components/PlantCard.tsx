@@ -1,6 +1,6 @@
 import React from 'react';
 import { ShoppingBag, Droplets, Leaf, ThermometerSnowflake } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 export interface PlantInfo {
   id: string;
@@ -25,9 +25,11 @@ export interface PlantInfo {
 interface PlantCardProps {
   plant: PlantInfo;
   featured?: boolean;
+  isCarousel?: boolean;
 }
 
-const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
+const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false, isCarousel = false }) => {
+  const navigate = useNavigate(); // Initialize navigate
   // Function to convert Fahrenheit to Celsius
   const convertToCelsius = (fahrenheit: string): string => {
     // Extract numbers from string like "65-75°F"
@@ -70,12 +72,21 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
         <div className="flex flex-col md:flex-row">
           <div className="md:w-1/2 relative h-64 md:h-auto overflow-visible flex items-center justify-center" style={{ zIndex: 5 }}>
             {isUserAnalyzedImage ? (
-              <div className="rounded-full w-48 h-48 bg-emerald-900/70 backdrop-blur-sm p-1 border border-emerald-600/30 overflow-hidden">
-                <img
-                  src={plant.image}
-                  alt={plant.name}
-                  className="w-full h-full object-cover rounded-full"
-                />
+              <div 
+                className={`relative rounded-3xl overflow-hidden shadow-xl bg-emerald-800 transition-transform duration-300 ${isCarousel ? 'hover:scale-[1.02]' : 'hover:scale-105'} cursor-pointer h-full`} 
+                style={{ maxWidth: isCarousel ? '225px' : '100%' }}
+                onClick={() => {
+                  console.log(`Navigating to plant with ID: ${plant.id}`);
+                  navigate(`/plant/${plant.id}`);
+                }}
+              >
+                <div className="rounded-full w-48 h-48 bg-emerald-900/70 backdrop-blur-sm p-1 border border-emerald-600/30 overflow-hidden">
+                  <img
+                    src={plant.image}
+                    alt={plant.name}
+                    className="w-full h-full object-cover rounded-full"
+                  />
+                </div>
               </div>
             ) : (
               <img
@@ -234,7 +245,7 @@ const PlantCard: React.FC<PlantCardProps> = ({ plant, featured = false }) => {
       
       <div className="flex justify-center mt-2 mb-2">
         <Link
-          to={`/plants/${plant.id}`}
+          to={`/plant/${plant.id}`}
           className="inline-flex items-center justify-center bg-emerald-600/40 hover:bg-emerald-500/70 text-emerald-300 hover:text-white text-base font-medium transition-all duration-300 gap-1 py-2.5 px-7 rounded-full border border-emerald-500/40 backdrop-blur-sm shadow-sm hover:shadow-md"
         >
           <span>View more</span>

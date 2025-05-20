@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import PlantCard, { PlantInfo } from './PlantCard';
 
 interface PlantCardCarouselProps {
@@ -111,8 +112,8 @@ const PlantCardCarousel: React.FC<PlantCardCarouselProps> = ({
             {getVisibleCards().map(({ index, plant, position }) => (
               <div 
                 key={plant.id} 
-                className={`absolute transition-opacity duration-500 ease-in-out z-20 ${
-                  position === 'center' ? 'opacity-100' : 'opacity-0'
+                className={`absolute transition-all duration-500 ease-in-out z-20 ${
+                  position === 'center' ? 'opacity-100 scale-100 pointer-events-auto' : 'opacity-0 scale-95 pointer-events-none'
                 }`}
               >
                 <PlantCard plant={plant} featured={false} />
@@ -154,13 +155,13 @@ const PlantCardCarousel: React.FC<PlantCardCarouselProps> = ({
 
           {/* View All button */}
           <div className="flex justify-center mt-8">
-            <a 
-              href="/plants" 
+            <Link 
+              to="/plants" 
               className="inline-flex items-center justify-center bg-emerald-700/40 hover:bg-emerald-600/70 text-emerald-300 hover:text-white text-base font-medium transition-all duration-300 gap-1 py-2.5 px-7 rounded-full border border-emerald-500/40 backdrop-blur-sm"
             >
               <span>View All Plants</span>
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="ml-1"><path d="m9 18 6-6-6-6"/></svg>
-            </a>
+            </Link>
           </div>
         </div>
       </div>

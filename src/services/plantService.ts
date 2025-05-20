@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 // Plant database - exported so it can be accessed and modified
 export const plantDatabase: PlantInfo[] = [
   {
-    id: 'monstera-deliciosa',
+    id: 'red-gerbera-daisy',
     name: 'Red Gerbera Daisy',
     scientificName: 'Gerbera jamesonii',
     image: '/assets/plants/1.png',
@@ -13,10 +13,24 @@ export const plantDatabase: PlantInfo[] = [
     sunlight: 'medium',
     temperature: '65-85°F',
     price: 'Rs. 359/-',
-    description: 'Gerbera Daisies are known for their large, vibrant flowers.'
+    description: 'Gerbera Daisies are known for their large, vibrant flowers.',
+    careInstructions: {
+      watering: "Water when the top inch of soil is dry. Avoid overhead watering as wet leaves can lead to powdery mildew and other fungal diseases. Use room temperature water whenever possible.",
+      light: "Place in bright, indirect light for 6-8 hours daily. Morning sun with afternoon shade is ideal, especially in hot climates. Too little light results in fewer blooms.",
+      soil: "Plant in rich, well-draining soil with a pH between 5.5 and 6.5. A mix formulated for flowering houseplants with added perlite works well to ensure proper drainage.",
+      humidity: "Prefers moderate humidity (40-50%). In dry environments, use a pebble tray with water near the plant, but avoid misting as this can promote leaf diseases.",
+      fertilizing: "Apply a phosphorus-rich, water-soluble fertilizer (such as 15-30-15) diluted to half strength every 2 weeks during the growing season. Reduce to monthly in winter."
+    },
+    facts: [
+      "Discovered in 1880 by Robert Jameson in South Africa during a gold mining operation.",
+      "Available in all colors except true blue - any blue gerbera daisies are artificially colored.",
+      "Fifth most popular cut flower worldwide, after roses, carnations, chrysanthemums, and tulips.",
+      "Can last up to 14 days in a vase with proper care.",
+      "The flower is actually a composite of hundreds of tiny individual flowers."
+    ]
   },
   {
-    id: 'calathea-plant',
+    id: 'gerbera-daisy',
     name: 'Gerbera Daisy',
     scientificName: 'Gerbera jamesonii',
     image: '/assets/plants/2.png',
@@ -24,10 +38,24 @@ export const plantDatabase: PlantInfo[] = [
     sunlight: 'high',
     temperature: '65-75°F',
     price: 'Rs. 359/-',
-    description: 'Gerbera Daisies are vibrant flowering plants known for their large, daisy-like blooms in a variety of colors.'
+    description: 'Gerbera Daisies are vibrant flowering plants known for their large, daisy-like blooms in a variety of colors.',
+    careInstructions: {
+      watering: "Water when the top inch of soil is dry. Avoid overhead watering as wet leaves can lead to powdery mildew and other fungal diseases. Use room temperature water whenever possible.",
+      light: "Place in bright, indirect light for 6-8 hours daily. Morning sun with afternoon shade is ideal, especially in hot climates. Too little light results in fewer blooms.",
+      soil: "Plant in rich, well-draining soil with a pH between 5.5 and 6.5. A mix formulated for flowering houseplants with added perlite works well to ensure proper drainage.",
+      humidity: "Prefers moderate humidity (40-50%). In dry environments, use a pebble tray with water near the plant, but avoid misting as this can promote leaf diseases.",
+      fertilizing: "Apply a phosphorus-rich, water-soluble fertilizer (such as 15-30-15) diluted to half strength every 2 weeks during the growing season. Reduce to monthly in winter."
+    },
+    facts: [
+      "Discovered in 1880 by Robert Jameson in South Africa during a gold mining operation.",
+      "Available in all colors except true blue - any blue gerbera daisies are artificially colored.",
+      "Fifth most popular cut flower worldwide, after roses, carnations, chrysanthemums, and tulips.",
+      "Can last up to 14 days in a vase with proper care.",
+      "The flower is actually a composite of hundreds of tiny individual flowers."
+    ]
   },
   {
-    id: 'snake-plant',
+    id: 'pink-adenium',
     name: 'Pink Adenium',
     scientificName: 'Adenium obesum',
     image: '/assets/plants/3.png',
@@ -35,10 +63,24 @@ export const plantDatabase: PlantInfo[] = [
     sunlight: 'high',
     temperature: '60-85°F',
     price: 'Rs. 359/-',
-    description: 'The Pink Adenium, also known as Desert Rose, is a succulent plant with thick stems and striking pink flowers.'
+    description: 'The Pink Adenium, also known as Desert Rose, is a succulent plant with thick stems and striking pink flowers.',
+    careInstructions: {
+      watering: "Water thoroughly but infrequently, allowing soil to dry completely between waterings. During active growth (spring/summer), water once every 7-10 days. In winter, reduce to once every 3-4 weeks or when the plant shows signs of thirst.",
+      light: "Demands at least 6-8 hours of direct sunlight daily. Place in your brightest window, preferably south-facing. Insufficient light results in leggy growth and few flowers.",
+      soil: "Must have extremely well-draining soil. Use a mix of 50% cactus soil, 25% perlite, and 25% coarse sand or pumice. Never use regular potting soil as it retains too much moisture.",
+      humidity: "Prefers dry air conditions (30-40% humidity). Excessive humidity can lead to root rot and fungal problems. Ensure good air circulation around the plant at all times.",
+      fertilizing: "Apply a phosphorus-rich, low-nitrogen fertilizer (such as 5-15-5) diluted to half strength once monthly during spring and summer growing season. Do not fertilize in fall or winter."
+    },
+    facts: [
+      "Often called 'Desert Rose' because of its rose-like flowers and ability to thrive in arid conditions.",
+      "The swollen caudex (base) stores water, allowing it to survive long periods of drought.",
+      "All parts of the plant contain toxic cardiac glycosides, so care should be taken around children and pets.",
+      "Highly prized for bonsai cultivation due to its thick trunk and miniaturization potential.",
+      "In its native habitat, can grow up to 10 feet tall and live for decades."
+    ]
   },
   {
-    id: 'pothos-plant',
+    id: 'chinese-hibiscus',
     name: 'Chinese Hibiscus',
     scientificName: 'Hibiscus rosa-sinensis',
     image: '/assets/plants/4.png',
@@ -46,7 +88,21 @@ export const plantDatabase: PlantInfo[] = [
     sunlight: 'high',
     temperature: '65-80°F',
     price: 'Rs. 359/-',
-    description: 'The Chinese hibiscus is a flowering plant known for its large, showy flowers.'
+    description: 'The Chinese hibiscus is a flowering plant known for its large, showy flowers.',
+    careInstructions: {
+      watering: "Keep soil consistently moist but not waterlogged. Water thoroughly when the top inch of soil feels dry. Increase watering during blooming and hot periods; reduce in winter.",
+      light: "Requires at least 6 hours of direct sunlight daily for abundant flowering. Place near south or west-facing windows when grown indoors. Protect from intense afternoon sun in very hot regions.",
+      soil: "Plant in rich, well-draining soil with a pH between 6.0-6.5. A mix of quality potting soil with 25% perlite or pumice ensures good drainage while retaining necessary moisture.",
+      humidity: "Thrives in moderate to high humidity (50-60%). Increase humidity by grouping plants together or using a humidity tray. Regular misting benefits the plant in dry climates.",
+      fertilizing: "Feed with a high-potassium fertilizer (such as 10-10-20) every 2 weeks during growing season. Reduce to monthly in fall and stop completely in winter to allow dormancy."
+    },
+    facts: [
+      "The national flower of Malaysia and the state flower of Hawaii.",
+      "Individual flowers last only 1-2 days, but plants bloom continuously throughout the season.",
+      "Contains vitamin C and is used to make herbal teas in many cultures.",
+      "Has been used in traditional medicine for centuries to treat high blood pressure.",
+      "The red varieties are especially popular in religious ceremonies in Hindu culture."
+    ]
   },
   // other plants can remain in the original plantService.ts file
 ];

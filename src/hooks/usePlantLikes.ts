@@ -1,35 +1,38 @@
 import { useState, useEffect, useCallback } from 'react';
-import { likePlant, unlikePlant, isPlantLiked } from '../services/supabasePlantService';
-import useDeviceId from './useDeviceId';
+import { likePlant, unlikePlant, isPlantLiked, getPlantLikesCount } from '../services/localStorageLikesService';
 
 /**
- * Hook for managing plant likes/unlikes
+ * Hook for managing plant likes/unlikes using local storage
  */
-export const usePlantLikes = (plantId: string) => {
+const usePlantLikes = (plantId: string) => {
   const [isLiked, setIsLiked] = useState<boolean>(false);
   const [likesCount, setLikesCount] = useState<number>(0);
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const deviceId = useDeviceId();
 
   // Check if the plant is already liked when component mounts
   useEffect(() => {
-    if (!deviceId || !plantId) return;
+    if (!plantId) return;
     
-    const checkIfLiked = async () => {
+    const checkIfLiked = () => {
       try {
-        const liked = await isPlantLiked(plantId, deviceId);
+        // Check if plant is liked in local storage
+        const liked = isPlantLiked(plantId);
         setIsLiked(liked);
+        
+        // Get the current likes count
+        const count = getPlantLikesCount(plantId);
+        setLikesCount(count);
       } catch (error) {
         console.error('Error checking if plant is liked:', error);
       }
     };
     
     checkIfLiked();
-  }, [deviceId, plantId]);
+  }, [plantId]);
 
   // Toggle like status
-  const toggleLike = useCallback(async () => {
-    if (!deviceId || !plantId || isLoading) return;
+  const toggleLike = useCallback(() => {
+    if (!plantId || isLoading) return;
     
     setIsLoading(true);
     try {
@@ -37,14 +40,14 @@ export const usePlantLikes = (plantId: string) => {
       
       if (isLiked) {
         // Unlike the plant
-        success = await unlikePlant(plantId, deviceId);
+        success = unlikePlant(plantId);
         if (success) {
           setIsLiked(false);
           setLikesCount(prev => Math.max(0, prev - 1));
         }
       } else {
         // Like the plant
-        success = await likePlant(plantId, deviceId);
+        success = likePlant(plantId);
         if (success) {
           setIsLiked(true);
           setLikesCount(prev => prev + 1);
@@ -55,7 +58,7 @@ export const usePlantLikes = (plantId: string) => {
     } finally {
       setIsLoading(false);
     }
-  }, [deviceId, plantId, isLiked, isLoading]);
+  }, [plantId, isLiked, isLoading]);
 
   return {
     isLiked,
